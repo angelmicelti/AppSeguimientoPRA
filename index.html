@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<!-- PWA Configuration -->
+    <!-- PWA Configuration -->
     <meta name="theme-color" content="#1e40af">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -19,7 +19,7 @@
     
     <!-- Manifest -->
     <link rel="manifest" href="manifest.json">
-	
+    
     <title>Gestión de Programas de Recuperación - IES Virgen de Villadiego</title>
     <script src="https://unpkg.com/tailwindcss-cdn@3.4.10/tailwindcss.js"></script>
     <!-- FontAwesome -->
@@ -428,14 +428,14 @@
             
             <!-- Actions Footer -->
             <div class="max-w-5xl mx-auto mt-12 flex flex-col md:flex-row justify-center items-center gap-4">
-				<button onclick="app.data.exportJSON()" class="flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 px-6 rounded transition btn-primary ripple hover-lift md:w-auto w-full max-w-xs">
-					<i class="fa-solid fa-download"></i> Descargar JSON
-				</button>
-				<label class="flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 px-6 rounded transition btn-primary ripple hover-lift cursor-pointer md:w-auto w-full max-w-xs">
-					<i class="fa-solid fa-upload"></i> Cargar JSON
-					<input type="file" class="hidden" onchange="app.data.importJSON(this)">
-				</label>
-			</div>
+                <button onclick="app.data.exportJSON()" class="flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 px-6 rounded transition btn-primary ripple hover-lift md:w-auto w-full max-w-xs">
+                    <i class="fa-solid fa-download"></i> Descargar JSON
+                </button>
+                <label class="flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 px-6 rounded transition btn-primary ripple hover-lift cursor-pointer md:w-auto w-full max-w-xs">
+                    <i class="fa-solid fa-upload"></i> Cargar JSON
+                    <input type="file" class="hidden" onchange="app.data.importJSON(this)">
+                </label>
+            </div>
 
             <!-- Sección de Ayuda Rápida - ACORDEÓN -->
             <div class="max-w-5xl mx-auto mt-12 bg-blue-50 border border-blue-200 rounded-xl p-6 soft-shadow">
@@ -1448,28 +1448,28 @@
                     // Eliminar tildes y caracteres especiales, mantener solo letras y números
                     return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g, '');
                 },
-				
-				// NUEVA FUNCIÓN: Formatear fecha y hora como DDMMAAAA_HHMM
-				formatDateTime: function(date = new Date()) {
-					const day = String(date.getDate()).padStart(2, '0');
-					const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses van de 0-11
-					const year = date.getFullYear();
-					const hours = String(date.getHours()).padStart(2, '0');
-					const minutes = String(date.getMinutes()).padStart(2, '0');
-					
-					return `${day}${month}${year}_${hours}${minutes}`;
-				},
-				
-				// NUEVA FUNCIÓN: Formatear fecha y hora como DD-MM-AAAA_HHhMMm
-				formatDateTimeReadable: function(date = new Date()) {
-					const day = String(date.getDate()).padStart(2, '0');
-					const month = String(date.getMonth() + 1).padStart(2, '0');
-					const year = date.getFullYear();
-					const hours = String(date.getHours()).padStart(2, '0');
-					const minutes = String(date.getMinutes()).padStart(2, '0');
-					
-					return `${day}-${month}-${year}_${hours}h${minutes}m`;
-				},
+                
+                // NUEVA FUNCIÓN: Formatear fecha y hora como DDMMAAAA_HHMM
+                formatDateTime: function(date = new Date()) {
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses van de 0-11
+                    const year = date.getFullYear();
+                    const hours = String(date.getHours()).padStart(2, '0');
+                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                    
+                    return `${day}${month}${year}_${hours}${minutes}`;
+                },
+                
+                // NUEVA FUNCIÓN: Formatear fecha y hora como DD-MM-AAAA_HHhMMm
+                formatDateTimeReadable: function(date = new Date()) {
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const year = date.getFullYear();
+                    const hours = String(date.getHours()).padStart(2, '0');
+                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                    
+                    return `${day}-${month}-${year}_${hours}h${minutes}m`;
+                },
 
                 openModal: function(modalId, closeCallback) {
                     const modal = document.getElementById(modalId);
@@ -1844,10 +1844,10 @@
                     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(stateToExport));
                     const downloadAnchorNode = document.createElement('a');
                     downloadAnchorNode.setAttribute("href", dataStr);
-					
-					// Formato más legible: DD-MM-AAAA_HHhMMm
-					const fechaHora = app.utils.formatDateTimeReadable();
-					downloadAnchorNode.setAttribute("download", `BackupProgramaRecuperacion_${fechaHora}.json`);
+                    
+                    // Formato más legible: DD-MM-AAAA_HHhMMm
+                    const fechaHora = app.utils.formatDateTimeReadable();
+                    downloadAnchorNode.setAttribute("download", `BackupProgramaRecuperacion_${fechaHora}.json`);
 
                     
                     document.body.appendChild(downloadAnchorNode);
@@ -1884,98 +1884,98 @@
 
             // --- MÓDULOS DE LÓGICA ---
             modules: {
-				// --- CÁLCULO CENTRALIZADO ---
-				calculation: {
-					getStudentSubjectData: function(student, subjectCode) {
-						const criteriaList = criteriaDB[subjectCode] || [];
-						const critGrades = {};
-						
-						// Inicializar TODOS los criterios de la materia
-						criteriaList.forEach(c => {
-							critGrades[c.code] = { 
-								passedGrade: 0,      // Nota de passedCriteria
-								activityGrades: [],  // Notas de actividades
-								hasPassed: false     // Si ya estaba aprobado
-							};
-						});
-						
-						// 1. Agregar notas de passedCriteria (criterios ya aprobados)
-						for (let code in student.passedCriteria) {
-							if (code.startsWith(subjectCode.substring(0,3))) {
-								if (critGrades[code]) {
-									critGrades[code].passedGrade = student.passedCriteria[code];
-									critGrades[code].hasPassed = true;
-								}
-							}
-						}
-						
-						// 2. Agregar notas de actividades - SOLO SI ESTÁN ENTREGADAS Y LA NOTA ES MAYOR QUE 0
-						student.activities.forEach(act => {
-							if (act.delivered) { // <-- SOLO ACTIVIDADES ENTREGADAS
-								for (let code in act.grades) {
-									if (code.startsWith(subjectCode.substring(0,3))) {
-										if (!critGrades[code]) {
-											critGrades[code] = { 
-												passedGrade: 0, 
-												activityGrades: [], 
-												hasPassed: false 
-											};
-										}
-										// Solo agregar si la nota es mayor que 0 (evitar notas 0 de actividades no evaluadas)
-										const grade = parseFloat(act.grades[code]) || 0;
-										if (grade > 0) { // <-- CORRECCIÓN: Solo agregar notas > 0
-											critGrades[code].activityGrades.push(grade);
-										}
-									}
-								}
-							}
-						});
-						
-						// 3. Calcular nota final para cada criterio
-						const finalCritData = [];
-						for (let code in critGrades) {
-							const data = critGrades[code];
-							let finalGrade = 0;
-							
-							// Caso 1: El criterio ya estaba aprobado (passedCriteria tiene prioridad)
-							if (data.hasPassed) {
-								finalGrade = data.passedGrade;
-							} 
-							// Caso 2: Tiene notas de actividades (solo de actividades entregadas)
-							else if (data.activityGrades.length > 0) {
-								// Calcular promedio de notas de actividades
-								const sum = data.activityGrades.reduce((a, b) => a + b, 0);
-								finalGrade = sum / data.activityGrades.length;
-							}
-							// Caso 3: No tiene notas (se queda en 0)
-							
-							finalCritData.push({ 
-								code, 
-								avg: finalGrade,
-								hasPassed: data.hasPassed,
-								activityCount: data.activityGrades.length
-							});
-						}
-						
-						// 4. Agrupar por competencias específicas
-						const compMap = {};
-						finalCritData.forEach(item => {
-							const parts = item.code.split('.');
-							const compCode = `${parts[0]}.${parts[1]}.${parts[2]}`;
-							if (!compMap[compCode]) compMap[compCode] = { criteria: [], avg: 0 };
-							compMap[compCode].criteria.push(item);
-							compMap[compCode].avg += item.avg;
-						});
-						
-						// 5. Calcular promedio por competencia
-						for (let compCode in compMap) {
-							const count = compMap[compCode].criteria.length;
-							compMap[compCode].avg = count > 0 ? compMap[compCode].avg / count : 0;
-						}
-						
-						return { finalCritData, compMap };
-					}
-				},
+                // --- CÁLCULO CENTRALIZADO ---
+                calculation: {
+                    getStudentSubjectData: function(student, subjectCode) {
+                        const criteriaList = criteriaDB[subjectCode] || [];
+                        const critGrades = {};
+                        
+                        // Inicializar TODOS los criterios de la materia
+                        criteriaList.forEach(c => {
+                            critGrades[c.code] = { 
+                                passedGrade: 0,      // Nota de passedCriteria
+                                activityGrades: [],  // Notas de actividades
+                                hasPassed: false     // Si ya estaba aprobado
+                            };
+                        });
+                        
+                        // 1. Agregar notas de passedCriteria (criterios ya aprobados)
+                        for (let code in student.passedCriteria) {
+                            if (code.startsWith(subjectCode.substring(0,3))) {
+                                if (critGrades[code]) {
+                                    critGrades[code].passedGrade = student.passedCriteria[code];
+                                    critGrades[code].hasPassed = true;
+                                }
+                            }
+                        }
+                        
+                        // 2. Agregar notas de actividades - SOLO SI ESTÁN ENTREGADAS Y LA NOTA ES MAYOR QUE 0
+                        student.activities.forEach(act => {
+                            if (act.delivered) { // <-- SOLO ACTIVIDADES ENTREGADAS
+                                for (let code in act.grades) {
+                                    if (code.startsWith(subjectCode.substring(0,3))) {
+                                        if (!critGrades[code]) {
+                                            critGrades[code] = { 
+                                                passedGrade: 0, 
+                                                activityGrades: [], 
+                                                hasPassed: false 
+                                            };
+                                        }
+                                        // Solo agregar si la nota es mayor que 0 (evitar notas 0 de actividades no evaluadas)
+                                        const grade = parseFloat(act.grades[code]) || 0;
+                                        if (grade > 0) { // <-- CORRECCIÓN: Solo agregar notas > 0
+                                            critGrades[code].activityGrades.push(grade);
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        
+                        // 3. Calcular nota final para cada criterio
+                        const finalCritData = [];
+                        for (let code in critGrades) {
+                            const data = critGrades[code];
+                            let finalGrade = 0;
+                            
+                            // Caso 1: El criterio ya estaba aprobado (passedCriteria tiene prioridad)
+                            if (data.hasPassed) {
+                                finalGrade = data.passedGrade;
+                            } 
+                            // Caso 2: Tiene notas de actividades (solo de actividades entregadas)
+                            else if (data.activityGrades.length > 0) {
+                                // Calcular promedio de notas de actividades
+                                const sum = data.activityGrades.reduce((a, b) => a + b, 0);
+                                finalGrade = sum / data.activityGrades.length;
+                            }
+                            // Caso 3: No tiene notas (se queda en 0)
+                            
+                            finalCritData.push({ 
+                                code, 
+                                avg: finalGrade,
+                                hasPassed: data.hasPassed,
+                                activityCount: data.activityGrades.length
+                            });
+                        }
+                        
+                        // 4. Agrupar por competencias específicas
+                        const compMap = {};
+                        finalCritData.forEach(item => {
+                            const parts = item.code.split('.');
+                            const compCode = `${parts[0]}.${parts[1]}.${parts[2]}`;
+                            if (!compMap[compCode]) compMap[compCode] = { criteria: [], avg: 0 };
+                            compMap[compCode].criteria.push(item);
+                            compMap[compCode].avg += item.avg;
+                        });
+                        
+                        // 5. Calcular promedio por competencia
+                        for (let compCode in compMap) {
+                            const count = compMap[compCode].criteria.length;
+                            compMap[compCode].avg = count > 0 ? compMap[compCode].avg / count : 0;
+                        }
+                        
+                        return { finalCritData, compMap };
+                    }
+                },
                 
                 // --- GESTIÓN DE ALUMNADO ---
                 students: {
@@ -2519,12 +2519,21 @@
                             missingAlert.classList.add('hidden');
                         }
 
+                        // Obtener fecha actual en formato YYYY-MM-DD para comparar con fechas de actividades
+                        const todayStr = new Date().toISOString().split('T')[0];
+
                         this.currentStudent.activities.forEach((act, idx) => {
                             const card = document.createElement('div');
                             card.className = "bg-white border-l-4 border-yellow-500 rounded shadow p-4 relative soft-shadow hover-lift fade-in-element";
                             card.style.animationDelay = `${idx * 0.05}s`;
                             const statusColor = act.delivered ? 'text-green-600' : 'text-red-500';
                             const statusIcon = act.delivered ? 'fa-check-circle' : 'fa-clock';
+                            
+                            // Determinar si la fecha de entrega ya ha pasado (solo comparar YYYY-MM-DD)
+                            const isPast = act.date < todayStr;
+                            const dateClass = isPast 
+                                ? 'text-sm font-bold bg-red-600 text-white mb-2 px-2 py-1 rounded inline-block' 
+                                : 'text-sm text-gray-600 mb-2';
                             
                             // MEJORA 3: Añadir botón de duplicar actividad
                             card.innerHTML = `
@@ -2534,7 +2543,7 @@
                                     <button onclick="app.modules.activities.deleteActivity(${idx})" class="text-gray-500 hover:text-red-600 transition-colors hover-scale" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                                 <h4 class="font-bold text-lg">${act.name}</h4>
-                                <p class="text-sm text-gray-600 mb-2"><i class="fa-regular fa-calendar mr-1"></i> ${act.date}</p>
+                                <p class="${dateClass}"><i class="fa-regular fa-calendar mr-1"></i> ${act.date}</p>
                                 <p class="text-sm font-bold ${statusColor} mb-3"><i class="fa-solid ${statusIcon}"></i> ${act.delivered ? 'Entregada' : 'Pendiente'}</p>
                                 
                                 <div class="bg-gray-50 p-2 rounded text-xs">
@@ -3040,39 +3049,39 @@
                                 const criteriaContainer = document.createElement('div');
                                 criteriaContainer.className = "flex flex-wrap gap-2";
                                 
-								compData.criteria.forEach(crit => {
-									const critDiv = document.createElement('div');
-									const critCodeDisplay = crit.code.split('.').slice(1).join('.'); // Quitamos la materia
-									
-									// Determinar colores según el estado
-									let bgClass = 'bg-gray-100';
-									let textClass = 'text-gray-400';
-									let statusText = 'Sin nota';
-									
-									if (crit.hasPassed) {
-										bgClass = 'bg-green-50';
-										textClass = 'text-green-700';
-										statusText = 'Aprobado';
-									} else if (crit.activityCount > 0) {
-										bgClass = 'bg-blue-50';
-										textClass = 'text-blue-700';
-										statusText = `${crit.activityCount} act.`;
-									}
-									
-									critDiv.className = `flex flex-col items-center p-2 border rounded min-w-[80px] ${bgClass} hover-lift hover:scale-105 transition-all duration-200`;
-									
-									critDiv.innerHTML = `
-										<span class="text-xs font-bold text-gray-700">${critCodeDisplay}</span>
-										<span class="text-lg font-bold ${textClass}">${crit.avg.toFixed(2)}</span>
-										<span class="text-xs ${crit.hasPassed ? 'text-green-600' : (crit.activityCount > 0 ? 'text-blue-600' : 'text-gray-400')}">
-											${statusText}
-										</span>
-									`;
-									criteriaContainer.appendChild(critDiv);
-									
-									totalCritAvg += crit.avg;
-									critCount++;
-								});
+                                compData.criteria.forEach(crit => {
+                                    const critDiv = document.createElement('div');
+                                    const critCodeDisplay = crit.code.split('.').slice(1).join('.'); // Quitamos la materia
+                                    
+                                    // Determinar colores según el estado
+                                    let bgClass = 'bg-gray-100';
+                                    let textClass = 'text-gray-400';
+                                    let statusText = 'Sin nota';
+                                    
+                                    if (crit.hasPassed) {
+                                        bgClass = 'bg-green-50';
+                                        textClass = 'text-green-700';
+                                        statusText = 'Aprobado';
+                                    } else if (crit.activityCount > 0) {
+                                        bgClass = 'bg-blue-50';
+                                        textClass = 'text-blue-700';
+                                        statusText = `${crit.activityCount} act.`;
+                                    }
+                                    
+                                    critDiv.className = `flex flex-col items-center p-2 border rounded min-w-[80px] ${bgClass} hover-lift hover:scale-105 transition-all duration-200`;
+                                    
+                                    critDiv.innerHTML = `
+                                        <span class="text-xs font-bold text-gray-700">${critCodeDisplay}</span>
+                                        <span class="text-lg font-bold ${textClass}">${crit.avg.toFixed(2)}</span>
+                                        <span class="text-xs ${crit.hasPassed ? 'text-green-600' : (crit.activityCount > 0 ? 'text-blue-600' : 'text-gray-400')}">
+                                            ${statusText}
+                                        </span>
+                                    `;
+                                    criteriaContainer.appendChild(critDiv);
+                                    
+                                    totalCritAvg += crit.avg;
+                                    critCount++;
+                                });
                                 
                                 compDiv.appendChild(criteriaContainer);
                                 rightContent.appendChild(compDiv);
@@ -3740,7 +3749,7 @@
         };
 
     </script>
-	<script>
+    <script>
     // Service Worker Registration
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
