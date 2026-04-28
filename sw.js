@@ -1,6 +1,6 @@
 // Nombre de la caché - CAMBIA ESTE NÚMERO CADA VEZ QUE ACTUALICES
 const CACHE_NAME = 'gestor-pra-v6.0';  // <-- Cambia el número de versión
-const APP_VERSION = '6.0';
+const APP_VERSION = '6.1';
 
 // Archivos a cachear
 const ARCHIVOS_CACHE = [
