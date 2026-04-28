@@ -1034,6 +1034,18 @@
                     </div>
                 </div>
 
+                <!-- Sección Informe por Grupo y Materia -->
+                <div class="mb-8 border-b pb-6">
+                    <h3 class="font-bold text-lg text-gray-800 mb-4 text-center">Informes por Grupo y Materia</h3>
+                    <div class="flex justify-center">
+                        <div class="border p-4 rounded-lg hover:bg-red-50 transition cursor-pointer bg-gray-50 text-center hover-lift hover-glow w-full max-w-xs" onclick="app.modules.reports.openGroupSubjectModal()">
+                            <i class="fa-solid fa-users text-red-500 text-2xl mb-2"></i>
+                            <h4 class="font-bold text-sm">Informe por Grupo y Materia</h4>
+                            <p class="text-xs text-gray-500 mt-1">Tabla de calificaciones por criterio</p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Sección Calendario Global -->
                 <div>
                     <h3 class="font-bold text-lg text-gray-800 mb-4">Calendario de Entregas</h3>
@@ -1335,6 +1347,44 @@
             <div class="flex justify-end gap-3 border-t pt-4">
                 <button type="button" onclick="app.modules.reports.closeActivityGradesModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition btn-primary ripple">Cancelar</button>
                 <button type="button" onclick="app.modules.reports.generateActivityGradesPDF()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition btn-primary ripple hover-lift font-semibold">
+                    <i class="fa-solid fa-file-pdf mr-1"></i> Generar PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Grupo y Materia -->
+    <div id="modal-group-subject" class="fixed inset-0 z-50 hidden opacity-0 pointer-events-none modal">
+        <div class="absolute inset-0 bg-black bg-opacity-50" onclick="app.modules.reports.closeGroupSubjectModal()"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6">
+            <h3 class="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">
+                <i class="fa-solid fa-users text-red-500"></i> Informe por Grupo y Materia
+            </h3>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Grupo:</label>
+                    <select id="gs-group-select" class="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-red-500 transition">
+                        <option value="">-- Seleccionar grupo --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Materia:</label>
+                    <select id="gs-subject-select" class="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-red-500 transition">
+                        <option value="">-- Seleccionar materia --</option>
+                        <option value="CYR1">CYR1 - 1º ESO</option>
+                        <option value="CYR2">CYR2 - 2º ESO</option>
+                        <option value="CYR3">CYR3 - 3º ESO</option>
+                        <option value="TYD2">TYD2 - 2º ESO</option>
+                        <option value="TYD3">TYD3 - 3º ESO</option>
+                    </select>
+                </div>
+                <div id="gs-student-count" class="text-sm text-gray-500 bg-gray-50 p-2 rounded hidden"></div>
+            </div>
+
+            <div class="flex justify-end gap-3 border-t pt-4 mt-4">
+                <button type="button" onclick="app.modules.reports.closeGroupSubjectModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition btn-primary ripple">Cancelar</button>
+                <button type="button" onclick="app.modules.reports.generateGroupSubjectPDF()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition btn-primary ripple hover-lift font-semibold">
                     <i class="fa-solid fa-file-pdf mr-1"></i> Generar PDF
                 </button>
             </div>
@@ -3549,8 +3599,12 @@
                         let yPos = 30;
 
                         subs.forEach((sub, idx) => {
-                            if (idx > 0) doc.addPage();
-                            yPos = 20;
+                            if (idx > 0) {
+                                doc.addPage();
+                                yPos = 20;
+                            } else {
+                                yPos = 32;
+                            }
 
                             doc.setFontSize(14);
                             doc.text(`Materia: ${sub}`, 14, yPos);
@@ -3604,8 +3658,12 @@
                         let yPos = 30;
 
                         subs.forEach((sub, idx) => {
-                            if (idx > 0) doc.addPage();
-                            yPos = 20;
+                            if (idx > 0) {
+                                doc.addPage();
+                                yPos = 20;
+                            } else {
+                                yPos = 32;
+                            }
 
                             doc.setFontSize(14);
                             doc.text(`Materia: ${sub}`, 14, yPos);
@@ -3782,6 +3840,240 @@
 
                         app.views.notify("PDF generado correctamente", "success");
                         this.closeActivityGradesModal();
+                    },
+
+                    // --- INFORME POR GRUPO Y MATERIA ---
+                    openGroupSubjectModal: function() {
+                        const groupSelect = document.getElementById('gs-group-select');
+                        groupSelect.innerHTML = '<option value="">-- Seleccionar grupo --</option>';
+
+                        // Obtener grupos únicos
+                        const groups = [...new Set(app.state.students.map(s => s.group).filter(Boolean))].sort();
+                        groups.forEach(g => {
+                            const opt = document.createElement('option');
+                            opt.value = g;
+                            opt.textContent = g;
+                            groupSelect.appendChild(opt);
+                        });
+
+                        // Reset materia
+                        document.getElementById('gs-subject-select').value = '';
+                        document.getElementById('gs-student-count').classList.add('hidden');
+
+                        // Listener para actualizar conteo
+                        groupSelect.onchange = function() { app.modules.reports.updateGroupSubjectCount(); };
+                        document.getElementById('gs-subject-select').onchange = function() { app.modules.reports.updateGroupSubjectCount(); };
+
+                        app.utils.openModal('modal-group-subject', this.closeGroupSubjectModal);
+                    },
+
+                    closeGroupSubjectModal: function() {
+                        app.utils.closeModal('modal-group-subject');
+                    },
+
+                    updateGroupSubjectCount: function() {
+                        const group = document.getElementById('gs-group-select').value;
+                        const subject = document.getElementById('gs-subject-select').value;
+                        const countEl = document.getElementById('gs-student-count');
+
+                        if (!group || !subject) {
+                            countEl.classList.add('hidden');
+                            return;
+                        }
+
+                        const filtered = app.state.students.filter(s => {
+                            if (s.group !== group) return false;
+                            return s.subjects.cyr === subject || s.subjects.tyd === subject;
+                        });
+
+                        countEl.classList.remove('hidden');
+                        countEl.innerHTML = `<i class="fa-solid fa-user mr-1"></i> ${filtered.length} alumno(s) con <strong>${subject}</strong> en <strong>${group}</strong>`;
+                    },
+
+                    generateGroupSubjectPDF: function() {
+                        const group = document.getElementById('gs-group-select').value;
+                        const subject = document.getElementById('gs-subject-select').value;
+
+                        if (!group) return app.views.notify("Selecciona un grupo", "error");
+                        if (!subject) return app.views.notify("Selecciona una materia", "error");
+
+                        // Filtrar alumnos del grupo con esa materia
+                        const students = app.state.students.filter(s => {
+                            if (s.group !== group) return false;
+                            return s.subjects.cyr === subject || s.subjects.tyd === subject;
+                        }).sort((a, b) => a.name.localeCompare(b.name));
+
+                        if (students.length === 0) {
+                            return app.views.notify("No hay alumnos con esa materia en ese grupo", "warning");
+                        }
+
+                        // Obtener criterios de la materia
+                        const criteriaList = criteriaDB[subject] || [];
+                        if (criteriaList.length === 0) {
+                            return app.views.notify("No se encontraron criterios para esa materia", "error");
+                        }
+
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF({ orientation: 'landscape' });
+
+                        // Título
+                        doc.setFontSize(16);
+                        doc.text(`Informe por Grupo y Materia: ${group} - ${subject}`, 14, 18);
+                        doc.setFontSize(10);
+                        doc.text(`Departamento de Tecnología - IES Virgen de Villadiego`, 14, 25);
+                        doc.text(`${students.length} alumno(s)  |  ${criteriaList.length} criterio(s) de evaluación`, 14, 31);
+
+                        // Cabecera de la tabla: Alumno | Crit1 | Crit2 | ... | MEDIA
+                        const shortCodes = criteriaList.map(c => {
+                            const parts = c.code.split('.');
+                            return parts.slice(1).join('.'); // Quitamos prefijo de materia
+                        });
+
+                        const head = [['Alumno/a', ...shortCodes, 'MEDIA']];
+
+                        const rows = students.map(student => {
+                            const data = app.modules.calculation.getStudentSubjectData(student, subject);
+                            
+                            // Construir mapa de código -> avg
+                            const gradeMap = {};
+                            data.finalCritData.forEach(c => {
+                                gradeMap[c.code] = c.avg;
+                            });
+
+                            // Fila: nombre + nota de cada criterio
+                            const row = [student.name];
+                            let sumGrades = 0;
+                            let gradedCount = 0;
+
+                            criteriaList.forEach(crit => {
+                                const grade = gradeMap[crit.code];
+                                if (grade !== undefined) {
+                                    const displayGrade = grade < 1 ? 1 : grade;
+                                    row.push(displayGrade.toFixed(2));
+                                    sumGrades += displayGrade;
+                                    gradedCount++;
+                                } else {
+                                    row.push('-');
+                                }
+                            });
+
+                            // Media global del alumno
+                            const avg = gradedCount > 0 ? (sumGrades / gradedCount).toFixed(2) : '-';
+                            row.push(avg);
+
+                            return row;
+                        });
+
+                        // Calcular media por criterio (fila final)
+                        const footerRow = ['MEDIA'];
+                        let totalSum = 0;
+                        let totalGraded = 0;
+
+                        criteriaList.forEach((_, critIdx) => {
+                            let colSum = 0;
+                            let colCount = 0;
+                            students.forEach(student => {
+                                const data = app.modules.calculation.getStudentSubjectData(student, subject);
+                                const gradeMap = {};
+                                data.finalCritData.forEach(c => { gradeMap[c.code] = c.avg; });
+                                const grade = gradeMap[criteriaList[critIdx].code];
+                                if (grade !== undefined && grade > 0) {
+                                    const displayGrade = grade < 1 ? 1 : grade;
+                                    colSum += displayGrade;
+                                    colCount++;
+                                }
+                            });
+                            const colAvg = colCount > 0 ? (colSum / colCount).toFixed(2) : '-';
+                            footerRow.push(colAvg);
+                            if (colCount > 0) {
+                                totalSum += colSum;
+                                totalGraded += colCount;
+                            }
+                        });
+
+                        // Media global de la última columna
+                        const globalAvg = totalGraded > 0 ? (totalSum / totalGraded).toFixed(2) : '-';
+                        footerRow.push(globalAvg);
+                        rows.push(footerRow);
+
+                        // Estilos de columna
+                        const colStyles = { 0: { cellWidth: 50, fontStyle: 'bold' } };
+                        const critWidth = Math.floor((257 - 50 - 22) / criteriaList.length);
+                        criteriaList.forEach((_, idx) => {
+                            colStyles[idx + 1] = { cellWidth: critWidth, halign: 'center', fontSize: 7 };
+                        });
+                        colStyles[criteriaList.length + 1] = { cellWidth: 22, halign: 'center', fontStyle: 'bold' };
+
+                        doc.autoTable({
+                            startY: 36,
+                            head: head,
+                            body: rows,
+                            columnStyles: colStyles,
+                            styles: {
+                                fontSize: 7,
+                                cellPadding: 2,
+                                overflow: 'linebreak'
+                            },
+                            headStyles: {
+                                fillColor: [100, 16, 16],
+                                textColor: [255, 255, 255],
+                                fontStyle: 'bold',
+                                fontSize: 7,
+                                halign: 'center'
+                            },
+                            didParseCell: function(data) {
+                                // Última fila (media) en negrita con fondo gris
+                                if (data.row.index === data.table.body.length - 1) {
+                                    data.cell.styles.fontStyle = 'bold';
+                                    data.cell.styles.fillColor = [230, 230, 230];
+                                }
+                                // Última columna (MEDIA) en negrita
+                                if (data.column.index === data.table.columns.length - 1 && data.row.index < data.table.body.length - 1) {
+                                    data.cell.styles.fontStyle = 'bold';
+                                }
+                                // Colorear notas (no cabecera, no fila media)
+                                if (data.row.index < data.table.body.length - 1 && data.column.index > 0 && data.column.index < data.table.columns.length - 1) {
+                                    const val = parseFloat(data.cell.raw);
+                                    if (!isNaN(val)) {
+                                        if (val >= 5) {
+                                            data.cell.styles.textColor = [22, 163, 74];
+                                        } else if (val > 0) {
+                                            data.cell.styles.textColor = [220, 38, 38];
+                                        }
+                                    }
+                                }
+                                // Colorear media del alumno
+                                if (data.column.index === data.table.columns.length - 1 && data.row.index < data.table.body.length - 1) {
+                                    const val = parseFloat(data.cell.raw);
+                                    if (!isNaN(val)) {
+                                        if (val >= 5) {
+                                            data.cell.styles.textColor = [22, 163, 74];
+                                        } else if (val > 0) {
+                                            data.cell.styles.textColor = [220, 38, 38];
+                                        }
+                                    }
+                                }
+                            },
+                            didDrawCell: function(data) {
+                                // Redibujar cabecera manualmente: fondo rojo oscuro + texto blanco
+                                if (data.section === 'head') {
+                                    const cell = data.cell;
+                                    doc.setFillColor(100, 16, 16);
+                                    doc.rect(cell.x, cell.y, cell.width, cell.height, 'F');
+                                    doc.setTextColor(255, 255, 255);
+                                    doc.setFontSize(7);
+                                    doc.setFont(undefined, 'bold');
+                                    const text = cell.raw != null ? String(cell.raw) : '';
+                                    doc.text(text, cell.x + cell.width / 2, cell.y + cell.height / 2 + 1, { align: 'center' });
+                                }
+                            }
+                        });
+
+                        const cleanGroup = app.utils.normalizeFileName(group);
+                        doc.save(`InformeGrupoYMateria_${cleanGroup}_${subject}.pdf`);
+
+                        app.views.notify("PDF generado correctamente", "success");
+                        this.closeGroupSubjectModal();
                     }
                 }
             },
