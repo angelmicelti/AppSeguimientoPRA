@@ -331,6 +331,52 @@
             color: #374151;
             cursor: pointer;
         }
+
+        /* Tooltip personalizado para criterios de evaluación */
+        .criterion-tooltip {
+            position: relative;
+            cursor: help;
+        }
+        .criterion-tooltip .tooltip-text {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            z-index: 50;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #1e293b;
+            color: #f1f5f9;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 400;
+            line-height: 1.4;
+            width: max-content;
+            max-width: 340px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            pointer-events: none;
+        }
+        .criterion-tooltip .tooltip-text::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px;
+            border-style: solid;
+            border-color: #1e293b transparent transparent transparent;
+        }
+        .criterion-tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Espacio inferior para la barra de navegación fija */
+        body:not(:has(#view-home.active)) main {
+            padding-bottom: 3rem;
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen text-gray-800">
@@ -1007,6 +1053,39 @@
             </div>
         </section>
 
+        <!-- NAV BAR: Menú de navegación inferior entre subpáginas -->
+        <nav id="bottom-nav" class="hidden fixed bottom-0 left-0 right-0 z-40">
+            <div id="bottom-nav-toggle" class="bg-gray-800 text-white text-center py-2 px-4 cursor-pointer hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 select-none shadow-lg" onclick="app.views.toggleBottomNav()">
+                <i class="fa-solid fa-compass text-sm"></i>
+                <span class="font-semibold text-sm">Ir a</span>
+                <i class="fa-solid fa-chevron-up text-xs transition-transform duration-300" id="bottom-nav-chevron"></i>
+            </div>
+            <div id="bottom-nav-menu" class="bg-white border-t border-gray-200 shadow-2xl transition-all duration-300 overflow-hidden" style="max-height: 0;">
+                <div class="max-w-3xl mx-auto py-2 px-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                    <button id="nav-btn-students" onclick="app.router.navigate('students'); app.views.toggleBottomNav(true);" class="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-blue-50 transition-colors group">
+                        <i class="fa-solid fa-users text-blue-600 text-lg group-hover:scale-110 transition-transform"></i>
+                        <span class="text-xs font-semibold text-gray-700 group-hover:text-blue-700 transition-colors">Gestión Alumnado</span>
+                    </button>
+                    <button id="nav-btn-program" onclick="app.router.navigate('program'); app.views.toggleBottomNav(true);" class="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-green-50 transition-colors group">
+                        <i class="fa-solid fa-clipboard-check text-green-600 text-lg group-hover:scale-110 transition-transform"></i>
+                        <span class="text-xs font-semibold text-gray-700 group-hover:text-green-700 transition-colors">Datos Programa</span>
+                    </button>
+                    <button id="nav-btn-activities" onclick="app.router.navigate('activities'); app.views.toggleBottomNav(true);" class="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-yellow-50 transition-colors group">
+                        <i class="fa-solid fa-list-check text-yellow-600 text-lg group-hover:scale-110 transition-transform"></i>
+                        <span class="text-xs font-semibold text-gray-700 group-hover:text-yellow-700 transition-colors">Actividades</span>
+                    </button>
+                    <button id="nav-btn-evaluation" onclick="app.router.navigate('evaluation'); app.views.toggleBottomNav(true);" class="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-purple-50 transition-colors group">
+                        <i class="fa-solid fa-calculator text-purple-600 text-lg group-hover:scale-110 transition-transform"></i>
+                        <span class="text-xs font-semibold text-gray-700 group-hover:text-purple-700 transition-colors">Evaluación</span>
+                    </button>
+                    <button id="nav-btn-reports" onclick="app.router.navigate('reports'); app.views.toggleBottomNav(true);" class="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-red-50 transition-colors group col-span-2 sm:col-span-1">
+                        <i class="fa-solid fa-file-pdf text-red-600 text-lg group-hover:scale-110 transition-transform"></i>
+                        <span class="text-xs font-semibold text-gray-700 group-hover:text-red-700 transition-colors">Informes</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
     </main>
 
     <!-- MODAL: HELP -->
@@ -1501,6 +1580,15 @@
                     return `${day}-${month}-${year}_${hours}h${minutes}m`;
                 },
 
+                // Busca la descripción de un criterio por su código en la base de datos
+                getCriterionDescription: function(code) {
+                    for (const subjectKey in criteriaDB) {
+                        const found = criteriaDB[subjectKey].find(c => c.code === code);
+                        if (found) return found.desc;
+                    }
+                    return '';
+                },
+
                 openModal: function(modalId, closeCallback) {
                     const modal = document.getElementById(modalId);
                     modal.classList.remove('hidden', 'pointer-events-none', 'opacity-0');
@@ -1603,6 +1691,31 @@
                     this.navigate('home');
                 },
                 navigate: function(viewId) {
+                    // Mostrar/ocultar la barra de navegación inferior
+                    const bottomNav = document.getElementById('bottom-nav');
+                    if (bottomNav) {
+                        if (viewId === 'home') {
+                            bottomNav.classList.add('hidden');
+                        } else {
+                            bottomNav.classList.remove('hidden');
+                            // Cerrar el menú desplegable al navegar
+                            app.views.toggleBottomNav(true);
+                        }
+                    }
+
+                    // Ocultar el botón de la página actual y mostrar los demás
+                    const pages = ['students', 'program', 'activities', 'evaluation', 'reports'];
+                    pages.forEach(p => {
+                        const btn = document.getElementById('nav-btn-' + p);
+                        if (btn) {
+                            if (p === viewId) {
+                                btn.classList.add('hidden');
+                            } else {
+                                btn.classList.remove('hidden');
+                            }
+                        }
+                    });
+
                     // Obtener todas las vistas
                     const views = document.querySelectorAll('.view-transition');
                     
@@ -1706,6 +1819,24 @@
             },
 
             views: {
+                // Alternar menú de navegación inferior (forceClose=true lo cierra directamente)
+                toggleBottomNav: function(forceClose) {
+                    const menu = document.getElementById('bottom-nav-menu');
+                    const chevron = document.getElementById('bottom-nav-chevron');
+                    if (!menu || !chevron) return;
+
+                    const isOpen = menu.style.maxHeight && menu.style.maxHeight !== '0px';
+                    if (forceClose === true || isOpen) {
+                        // Cerrar
+                        menu.style.maxHeight = '0px';
+                        chevron.style.transform = 'rotate(0deg)';
+                    } else {
+                        // Abrir
+                        menu.style.maxHeight = menu.scrollHeight + 'px';
+                        chevron.style.transform = 'rotate(180deg)';
+                    }
+                },
+
                 showHelp: function() {
                     app.utils.openModal('modal-help', app.views.closeHelp);
                 },
@@ -2634,9 +2765,10 @@
                                     ${Object.entries(act.grades).map(([code, note]) => {
                                         // Determinar si el input debe estar deshabilitado: si la actividad no está entregada, el input está deshabilitado, o si el bloqueo está activo
                                         const disabled = !act.delivered || isLocked;
+                                        const desc = app.utils.getCriterionDescription(code);
                                         return `
                                         <div class="flex justify-between items-center border-b last:border-0 py-1 hover:bg-gray-100 px-1 rounded transition-colors">
-                                            <span>${code}</span>
+                                            <span class="criterion-tooltip font-medium">${code}<span class="tooltip-text">${desc}</span></span>
                                             <input type="number" step="0.1" min="0" max="10" value="${note}" 
                                                 class="w-16 border rounded text-center p-1 text-sm grade-input ${disabled ? 'bg-gray-200 opacity-50' : ''}" 
                                                 data-activity-index="${idx}" data-code="${code}" 
@@ -3276,11 +3408,14 @@
                     renderCalendarSelector: function() {
                         const container = document.getElementById('calendar-students-list');
                         container.innerHTML = '';
+                        // Deseleccionar el checkbox "Seleccionar Todos"
+                        const selectAll = document.getElementById('cal-select-all');
+                        if (selectAll) selectAll.checked = false;
                         app.state.students.forEach(s => {
                             const div = document.createElement('div');
                             div.className = "flex items-center gap-2 text-sm p-1 hover:bg-gray-50 rounded transition-colors";
                             div.innerHTML = `
-                                <input type="checkbox" class="cal-student-check w-4 h-4 text-blue-600 rounded" value="${s.id}" checked>
+                                <input type="checkbox" class="cal-student-check w-4 h-4 text-blue-600 rounded" value="${s.id}">
                                 <span class="truncate">${s.name} (${s.group || '-'})</span>
                             `;
                             container.appendChild(div);
