@@ -1,6 +1,10 @@
+// ================================================
+// SERVICE WORKER — Seguimiento de PRA
+// ================================================
+
 // Nombre de la caché - CAMBIA ESTE NÚMERO CADA VEZ QUE ACTUALICES
-const CACHE_NAME = 'gestor-pra-v6.0';  // <-- Cambia el número de versión
-const APP_VERSION = '7.0';
+const CACHE_NAME = 'gestor-pra-v7.3';  // <-- Cambia el número de versión
+const APP_VERSION = '7.3';
 
 // Archivos a cachear
 const ARCHIVOS_CACHE = [
