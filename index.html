@@ -1014,6 +1014,17 @@
                         </select>
                     </div>
 
+                    <!-- Opción de filtrado: Solo criterios objeto de PRA -->
+                    <div class="mb-4 p-3 bg-amber-50 border border-amber-300 rounded-lg flex items-center gap-3">
+                        <input type="checkbox" id="report-filter-pra-only" class="w-5 h-5 text-amber-600 rounded cursor-pointer">
+                        <label for="report-filter-pra-only" class="text-sm font-semibold text-amber-800 cursor-pointer select-none">
+                            <i class="fa-solid fa-filter mr-1"></i> Solo criterios objeto de PRA (suspensos)
+                        </label>
+                        <span class="text-xs text-amber-600 ml-auto hidden md:inline">
+                            <i class="fa-solid fa-circle-info mr-1"></i> Al activar, no se calculará la media en el informe
+                        </span>
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div class="border p-4 rounded-lg hover:bg-red-50 transition cursor-pointer bg-gray-50 text-center hover-lift hover-glow" onclick="app.modules.reports.generateActivitiesPDF()">
                             <i class="fa-solid fa-list-ol text-red-500 text-2xl mb-2"></i>
@@ -1380,10 +1391,24 @@
                     </select>
                 </div>
                 <div id="gs-student-count" class="text-sm text-gray-500 bg-gray-50 p-2 rounded hidden"></div>
+
+                <!-- Opción de filtrado: Solo criterios objeto de PRA -->
+                <div class="p-3 bg-amber-50 border border-amber-300 rounded-lg flex items-center gap-3">
+                    <input type="checkbox" id="gs-filter-pra-only" class="w-5 h-5 text-amber-600 rounded cursor-pointer">
+                    <label for="gs-filter-pra-only" class="text-sm font-semibold text-amber-800 cursor-pointer select-none">
+                        <i class="fa-solid fa-filter mr-1"></i> Solo criterios objeto de PRA (suspensos)
+                    </label>
+                    <span class="text-xs text-amber-600 ml-auto">
+                        <i class="fa-solid fa-circle-info mr-1"></i> Sin media
+                    </span>
+                </div>
             </div>
 
             <div class="flex justify-end gap-3 border-t pt-4 mt-4">
                 <button type="button" onclick="app.modules.reports.closeGroupSubjectModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition btn-primary ripple">Cancelar</button>
+                <button type="button" onclick="app.modules.reports.generateGroupSubjectHTML()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition btn-primary ripple hover-lift font-semibold">
+                    <i class="fa-solid fa-file-code mr-1"></i> Exportar HTML
+                </button>
                 <button type="button" onclick="app.modules.reports.generateGroupSubjectPDF()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition btn-primary ripple hover-lift font-semibold">
                     <i class="fa-solid fa-file-pdf mr-1"></i> Generar PDF
                 </button>
@@ -3588,6 +3613,7 @@
                         const id = document.getElementById('report-student-select').value;
                         if (!id) return app.views.notify("Selecciona un alumno", "error");
                         const s = app.state.students.find(stu => stu.id === id);
+                        const praOnly = document.getElementById('report-filter-pra-only').checked;
 
                         const { jsPDF } = window.jspdf;
                         const doc = new jsPDF();
@@ -3595,15 +3621,22 @@
                         doc.setFontSize(16);
                         doc.text(`Informe Competencias: ${s.name} (${s.group || '-'})`, 14, 20);
                         
+                        if (praOnly) {
+                            doc.setFontSize(9);
+                            doc.setTextColor(180, 83, 9);
+                            doc.text('Filtro activo: Solo criterios objeto de PRA (suspensos)', 14, 26);
+                            doc.setTextColor(0, 0, 0);
+                        }
+
                         const subs = [s.subjects.cyr, s.subjects.tyd].filter(Boolean);
-                        let yPos = 30;
+                        let yPos = praOnly ? 34 : 30;
 
                         subs.forEach((sub, idx) => {
                             if (idx > 0) {
                                 doc.addPage();
                                 yPos = 20;
                             } else {
-                                yPos = 32;
+                                yPos = praOnly ? 36 : 32;
                             }
 
                             doc.setFontSize(14);
@@ -3612,26 +3645,51 @@
 
                             const data = app.modules.calculation.getStudentSubjectData(s, sub);
 
-                            const rows = Object.entries(data.compMap).map(([k,v]) => {
-                                // Calificación mínima legal: si la media es < 1, se transforma en 1
-                                const displayAvg = v.avg < 1 ? 1 : v.avg;
+                            // Filtrar competencias: si praOnly, solo incluir las que tengan al menos un criterio PRA
+                            const compEntries = Object.entries(data.compMap).filter(([k, v]) => {
+                                if (!praOnly) return true;
+                                return v.criteria.some(c => !c.hasPassed);
+                            });
+
+                            // Recalcular medias de competencia solo con criterios PRA
+                            const rows = compEntries.map(([k, v]) => {
+                                let avg;
+                                if (praOnly) {
+                                    const praCriterias = v.criteria.filter(c => !c.hasPassed);
+                                    avg = praCriterias.length > 0
+                                        ? praCriterias.reduce((sum, c) => sum + c.avg, 0) / praCriterias.length
+                                        : 0;
+                                } else {
+                                    avg = v.avg;
+                                }
+                                const displayAvg = avg < 1 ? 1 : avg;
                                 return [k, displayAvg.toFixed(2)];
                             });
-                            
-                            // Calc total average (con mínimos de 1 aplicados)
-                            let sumAvg = 0;
-                            rows.forEach(r => sumAvg += parseFloat(r[1]));
-                            const finalAvg = rows.length ? (sumAvg / rows.length).toFixed(2) : "0.00";
-                            
-                            rows.push(['', '']); // Spacer
-                            rows.push(['MEDIA GLOBAL (CE)', finalAvg]); // Footer row
+
+                            if (rows.length === 0) {
+                                doc.setFontSize(11);
+                                doc.text('No hay criterios objeto de PRA para esta materia.', 14, yPos);
+                                return;
+                            }
+
+                            let tableBody = [...rows];
+
+                            // Solo calcular y mostrar la media si NO se filtra por PRA
+                            if (!praOnly) {
+                                let sumAvg = 0;
+                                rows.forEach(r => sumAvg += parseFloat(r[1]));
+                                const finalAvg = rows.length ? (sumAvg / rows.length).toFixed(2) : "0.00";
+                                tableBody.push(['', '']);
+                                tableBody.push(['MEDIA GLOBAL (CE)', finalAvg]);
+                            }
 
                             doc.autoTable({
                                 startY: yPos,
                                 head: [['Competencia', 'Nota Media']],
-                                body: rows,
+                                body: tableBody,
                                 didParseCell: function(data) {
-                                    if (data.row.index === data.table.body.length - 1) {
+                                    // Última fila (media) en negrita con fondo gris
+                                    if (!praOnly && data.row.index === data.table.body.length - 1) {
                                         data.cell.styles.fontStyle = 'bold';
                                         data.cell.styles.fillColor = [220, 220, 220];
                                     }
@@ -3640,29 +3698,37 @@
                         });
 
                         const cleanName = app.utils.normalizeFileName(s.name);
-                        doc.save(`InformeCompetencias${cleanName}.pdf`);
+                        doc.save(`InformeCompetencias${praOnly ? '_SoloPRA' : ''}${cleanName}.pdf`);
                     },
                     
                     generateCriteriaPDF: function() {
                         const id = document.getElementById('report-student-select').value;
                         if (!id) return app.views.notify("Selecciona un alumno", "error");
                         const s = app.state.students.find(stu => stu.id === id);
+                        const praOnly = document.getElementById('report-filter-pra-only').checked;
 
                         const { jsPDF } = window.jspdf;
                         const doc = new jsPDF();
                         
                         doc.setFontSize(16);
                         doc.text(`Informe Criterios: ${s.name} (${s.group || '-'})`, 14, 20);
-                        
+
+                        if (praOnly) {
+                            doc.setFontSize(9);
+                            doc.setTextColor(180, 83, 9);
+                            doc.text('Filtro activo: Solo criterios objeto de PRA (suspensos)', 14, 26);
+                            doc.setTextColor(0, 0, 0);
+                        }
+
                         const subs = [s.subjects.cyr, s.subjects.tyd].filter(Boolean);
-                        let yPos = 30;
+                        let yPos = praOnly ? 34 : 30;
 
                         subs.forEach((sub, idx) => {
                             if (idx > 0) {
                                 doc.addPage();
                                 yPos = 20;
                             } else {
-                                yPos = 32;
+                                yPos = praOnly ? 36 : 32;
                             }
 
                             doc.setFontSize(14);
@@ -3671,26 +3737,40 @@
 
                             const data = app.modules.calculation.getStudentSubjectData(s, sub);
 
-                            const rows = data.finalCritData.map(c => {
-                                // Calificación mínima legal: si la media es < 1, se transforma en 1
+                            // Filtrar criterios: si praOnly, solo los que NO estaban aprobados (objeto de PRA)
+                            const filteredCritData = praOnly
+                                ? data.finalCritData.filter(c => !c.hasPassed)
+                                : data.finalCritData;
+
+                            const rows = filteredCritData.map(c => {
                                 const displayAvg = c.avg < 1 ? 1 : c.avg;
                                 return [c.code, displayAvg.toFixed(2)];
                             });
-                            
-                            // Calc total average (con mínimos de 1 aplicados)
-                            let sumAvg = 0;
-                            rows.forEach(r => sumAvg += parseFloat(r[1]));
-                            const finalAvg = rows.length ? (sumAvg / rows.length).toFixed(2) : "0.00";
-                            
-                            rows.push(['', '']); 
-                            rows.push(['MEDIA GLOBAL (CRIT)', finalAvg]);
+
+                            if (rows.length === 0) {
+                                doc.setFontSize(11);
+                                doc.text('No hay criterios objeto de PRA para esta materia.', 14, yPos);
+                                return;
+                            }
+
+                            let tableBody = [...rows];
+
+                            // Solo calcular y mostrar la media si NO se filtra por PRA
+                            if (!praOnly) {
+                                let sumAvg = 0;
+                                rows.forEach(r => sumAvg += parseFloat(r[1]));
+                                const finalAvg = rows.length ? (sumAvg / rows.length).toFixed(2) : "0.00";
+                                tableBody.push(['', '']);
+                                tableBody.push(['MEDIA GLOBAL (CRIT)', finalAvg]);
+                            }
 
                             doc.autoTable({
                                 startY: yPos,
                                 head: [['Criterio', 'Nota Final']],
-                                body: rows,
+                                body: tableBody,
                                 didParseCell: function(data) {
-                                    if (data.row.index === data.table.body.length - 1) {
+                                    // Última fila (media) en negrita con fondo gris
+                                    if (!praOnly && data.row.index === data.table.body.length - 1) {
                                         data.cell.styles.fontStyle = 'bold';
                                         data.cell.styles.fillColor = [220, 220, 220];
                                     }
@@ -3699,7 +3779,7 @@
                         });
 
                         const cleanName = app.utils.normalizeFileName(s.name);
-                        doc.save(`InformeCriterios${cleanName}.pdf`);
+                        doc.save(`InformeCriterios${praOnly ? '_SoloPRA' : ''}${cleanName}.pdf`);
                     },
 
                     // --- INFORME DE CALIFICACIONES DE ACTIVIDADES ---
@@ -3859,6 +3939,8 @@
                         // Reset materia
                         document.getElementById('gs-subject-select').value = '';
                         document.getElementById('gs-student-count').classList.add('hidden');
+                        // Reset filtro PRA
+                        document.getElementById('gs-filter-pra-only').checked = false;
 
                         // Listener para actualizar conteo
                         groupSelect.onchange = function() { app.modules.reports.updateGroupSubjectCount(); };
@@ -3893,6 +3975,7 @@
                     generateGroupSubjectPDF: function() {
                         const group = document.getElementById('gs-group-select').value;
                         const subject = document.getElementById('gs-subject-select').value;
+                        const praOnly = document.getElementById('gs-filter-pra-only').checked;
 
                         if (!group) return app.views.notify("Selecciona un grupo", "error");
                         if (!subject) return app.views.notify("Selecciona una materia", "error");
@@ -3908,36 +3991,74 @@
                         }
 
                         // Obtener criterios de la materia
-                        const criteriaList = criteriaDB[subject] || [];
-                        if (criteriaList.length === 0) {
+                        const allCriteriaList = criteriaDB[subject] || [];
+                        if (allCriteriaList.length === 0) {
                             return app.views.notify("No se encontraron criterios para esa materia", "error");
+                        }
+
+                        // Pre-calcular datos de cada alumno para saber qué criterios son PRA
+                        const studentDataMap = {};
+                        students.forEach(student => {
+                            const data = app.modules.calculation.getStudentSubjectData(student, subject);
+                            const praCodes = new Set();
+                            data.finalCritData.forEach(c => {
+                                if (!c.hasPassed) praCodes.add(c.code);
+                            });
+                            studentDataMap[student.id] = { data, praCodes };
+                        });
+
+                        // Si praOnly, filtrar columnas: solo criterios que sean PRA para al menos un alumno
+                        let criteriaList = allCriteriaList;
+                        if (praOnly) {
+                            criteriaList = allCriteriaList.filter(crit => {
+                                return students.some(s => studentDataMap[s.id].praCodes.has(crit.code));
+                            });
+                        }
+
+                        if (criteriaList.length === 0) {
+                            return app.views.notify("No hay criterios objeto de PRA para este grupo/materia", "warning");
                         }
 
                         const { jsPDF } = window.jspdf;
                         const doc = new jsPDF({ orientation: 'landscape' });
 
                         // Título
+                        let yPos = 18;
                         doc.setFontSize(16);
-                        doc.text(`Informe por Grupo y Materia: ${group} - ${subject}`, 14, 18);
+                        doc.text(`Informe por Grupo y Materia: ${group} - ${subject}`, 14, yPos);
+                        yPos += 7;
                         doc.setFontSize(10);
-                        doc.text(`Departamento de Tecnología - IES Virgen de Villadiego`, 14, 25);
-                        doc.text(`${students.length} alumno(s)  |  ${criteriaList.length} criterio(s) de evaluación`, 14, 31);
+                        doc.text(`Departamento de Tecnología - IES Virgen de Villadiego`, 14, yPos);
+                        yPos += 6;
+                        doc.text(`${students.length} alumno(s)  |  ${criteriaList.length} criterio(s) de evaluación`, 14, yPos);
 
-                        // Cabecera de la tabla: Alumno | Crit1 | Crit2 | ... | MEDIA
+                        if (praOnly) {
+                            yPos += 6;
+                            doc.setFontSize(9);
+                            doc.setTextColor(180, 83, 9);
+                            doc.text('Filtro activo: Solo criterios objeto de PRA (suspensos)', 14, yPos);
+                            doc.setTextColor(0, 0, 0);
+                            yPos += 4;
+                        }
+
+                        // Cabecera de la tabla: Alumno | Crit1 | Crit2 | ... | MEDIA (solo si no es praOnly)
                         const shortCodes = criteriaList.map(c => {
                             const parts = c.code.split('.');
                             return parts.slice(1).join('.'); // Quitamos prefijo de materia
                         });
 
-                        const head = [['Alumno/a', ...shortCodes, 'MEDIA']];
+                        const showMedia = !praOnly;
+                        const head = showMedia
+                            ? [['Alumno/a', ...shortCodes, 'MEDIA']]
+                            : [['Alumno/a', ...shortCodes]];
 
                         const rows = students.map(student => {
-                            const data = app.modules.calculation.getStudentSubjectData(student, subject);
+                            const { data, praCodes } = studentDataMap[student.id];
                             
-                            // Construir mapa de código -> avg
+                            // Construir mapa de código -> { avg, hasPassed }
                             const gradeMap = {};
                             data.finalCritData.forEach(c => {
-                                gradeMap[c.code] = c.avg;
+                                gradeMap[c.code] = { avg: c.avg, hasPassed: c.hasPassed };
                             });
 
                             // Fila: nombre + nota de cada criterio
@@ -3946,66 +4067,89 @@
                             let gradedCount = 0;
 
                             criteriaList.forEach(crit => {
-                                const grade = gradeMap[crit.code];
-                                if (grade !== undefined) {
-                                    const displayGrade = grade < 1 ? 1 : grade;
-                                    row.push(displayGrade.toFixed(2));
-                                    sumGrades += displayGrade;
-                                    gradedCount++;
+                                const gradeInfo = gradeMap[crit.code];
+                                if (praOnly) {
+                                    // Modo PRA: solo mostrar nota si el criterio era PRA para este alumno
+                                    if (gradeInfo && !gradeInfo.hasPassed) {
+                                        const displayGrade = gradeInfo.avg < 1 ? 1 : gradeInfo.avg;
+                                        row.push(displayGrade.toFixed(2));
+                                        sumGrades += displayGrade;
+                                        gradedCount++;
+                                    } else {
+                                        row.push('-');
+                                    }
                                 } else {
-                                    row.push('-');
+                                    const grade = gradeInfo ? gradeInfo.avg : undefined;
+                                    if (grade !== undefined) {
+                                        const displayGrade = grade < 1 ? 1 : grade;
+                                        row.push(displayGrade.toFixed(2));
+                                        sumGrades += displayGrade;
+                                        gradedCount++;
+                                    } else {
+                                        row.push('-');
+                                    }
                                 }
                             });
 
-                            // Media global del alumno
-                            const avg = gradedCount > 0 ? (sumGrades / gradedCount).toFixed(2) : '-';
-                            row.push(avg);
+                            // Media global del alumno (solo si no es praOnly)
+                            if (showMedia) {
+                                const avg = gradedCount > 0 ? (sumGrades / gradedCount).toFixed(2) : '-';
+                                row.push(avg);
+                            }
 
                             return row;
                         });
 
-                        // Calcular media por criterio (fila final)
-                        const footerRow = ['MEDIA'];
-                        let totalSum = 0;
-                        let totalGraded = 0;
+                        // Calcular media por criterio (fila final) - solo si no es praOnly
+                        if (showMedia) {
+                            const footerRow = ['MEDIA'];
+                            let totalSum = 0;
+                            let totalGraded = 0;
 
-                        criteriaList.forEach((_, critIdx) => {
-                            let colSum = 0;
-                            let colCount = 0;
-                            students.forEach(student => {
-                                const data = app.modules.calculation.getStudentSubjectData(student, subject);
-                                const gradeMap = {};
-                                data.finalCritData.forEach(c => { gradeMap[c.code] = c.avg; });
-                                const grade = gradeMap[criteriaList[critIdx].code];
-                                if (grade !== undefined && grade > 0) {
-                                    const displayGrade = grade < 1 ? 1 : grade;
-                                    colSum += displayGrade;
-                                    colCount++;
+                            criteriaList.forEach((_, critIdx) => {
+                                let colSum = 0;
+                                let colCount = 0;
+                                students.forEach(student => {
+                                    const { data } = studentDataMap[student.id];
+                                    const gradeMap = {};
+                                    data.finalCritData.forEach(c => { gradeMap[c.code] = c.avg; });
+                                    const grade = gradeMap[criteriaList[critIdx].code];
+                                    if (grade !== undefined && grade > 0) {
+                                        const displayGrade = grade < 1 ? 1 : grade;
+                                        colSum += displayGrade;
+                                        colCount++;
+                                    }
+                                });
+                                const colAvg = colCount > 0 ? (colSum / colCount).toFixed(2) : '-';
+                                footerRow.push(colAvg);
+                                if (colCount > 0) {
+                                    totalSum += colSum;
+                                    totalGraded += colCount;
                                 }
                             });
-                            const colAvg = colCount > 0 ? (colSum / colCount).toFixed(2) : '-';
-                            footerRow.push(colAvg);
-                            if (colCount > 0) {
-                                totalSum += colSum;
-                                totalGraded += colCount;
-                            }
-                        });
 
-                        // Media global de la última columna
-                        const globalAvg = totalGraded > 0 ? (totalSum / totalGraded).toFixed(2) : '-';
-                        footerRow.push(globalAvg);
-                        rows.push(footerRow);
+                            // Media global de la última columna
+                            const globalAvg = totalGraded > 0 ? (totalSum / totalGraded).toFixed(2) : '-';
+                            footerRow.push(globalAvg);
+                            rows.push(footerRow);
+                        }
 
                         // Estilos de columna
                         const colStyles = { 0: { cellWidth: 50, fontStyle: 'bold' } };
-                        const critWidth = Math.floor((257 - 50 - 22) / criteriaList.length);
+                        const totalTableWidth = 257;
+                        const mediaColWidth = showMedia ? 22 : 0;
+                        const critWidth = Math.floor((totalTableWidth - 50 - mediaColWidth) / criteriaList.length);
                         criteriaList.forEach((_, idx) => {
                             colStyles[idx + 1] = { cellWidth: critWidth, halign: 'center', fontSize: 7 };
                         });
-                        colStyles[criteriaList.length + 1] = { cellWidth: 22, halign: 'center', fontStyle: 'bold' };
+                        if (showMedia) {
+                            colStyles[criteriaList.length + 1] = { cellWidth: mediaColWidth, halign: 'center', fontStyle: 'bold' };
+                        }
+
+                        const lastDataRowIdx = showMedia ? rows.length - 1 : -1; // -1 = no footer row
 
                         doc.autoTable({
-                            startY: 36,
+                            startY: yPos + 4,
                             head: head,
                             body: rows,
                             columnStyles: colStyles,
@@ -4023,16 +4167,17 @@
                             },
                             didParseCell: function(data) {
                                 // Última fila (media) en negrita con fondo gris
-                                if (data.row.index === data.table.body.length - 1) {
+                                if (showMedia && data.row.index === lastDataRowIdx) {
                                     data.cell.styles.fontStyle = 'bold';
                                     data.cell.styles.fillColor = [230, 230, 230];
                                 }
                                 // Última columna (MEDIA) en negrita
-                                if (data.column.index === data.table.columns.length - 1 && data.row.index < data.table.body.length - 1) {
+                                if (showMedia && data.column.index === data.table.columns.length - 1 && data.row.index < lastDataRowIdx) {
                                     data.cell.styles.fontStyle = 'bold';
                                 }
                                 // Colorear notas (no cabecera, no fila media)
-                                if (data.row.index < data.table.body.length - 1 && data.column.index > 0 && data.column.index < data.table.columns.length - 1) {
+                                const critColEnd = showMedia ? data.table.columns.length - 1 : data.table.columns.length;
+                                if (data.row.index < (showMedia ? lastDataRowIdx : rows.length) && data.column.index > 0 && data.column.index < critColEnd) {
                                     const val = parseFloat(data.cell.raw);
                                     if (!isNaN(val)) {
                                         if (val >= 5) {
@@ -4043,7 +4188,7 @@
                                     }
                                 }
                                 // Colorear media del alumno
-                                if (data.column.index === data.table.columns.length - 1 && data.row.index < data.table.body.length - 1) {
+                                if (showMedia && data.column.index === data.table.columns.length - 1 && data.row.index < lastDataRowIdx) {
                                     const val = parseFloat(data.cell.raw);
                                     if (!isNaN(val)) {
                                         if (val >= 5) {
@@ -4070,9 +4215,213 @@
                         });
 
                         const cleanGroup = app.utils.normalizeFileName(group);
-                        doc.save(`InformeGrupoYMateria_${cleanGroup}_${subject}.pdf`);
+                        doc.save(`InformeGrupoYMateria_${praOnly ? 'SoloPRA_' : ''}${cleanGroup}_${subject}.pdf`);
 
                         app.views.notify("PDF generado correctamente", "success");
+                        this.closeGroupSubjectModal();
+                    },
+
+                    generateGroupSubjectHTML: function() {
+                        const group = document.getElementById('gs-group-select').value;
+                        const subject = document.getElementById('gs-subject-select').value;
+
+                        if (!group) return app.views.notify("Selecciona un grupo", "error");
+                        if (!subject) return app.views.notify("Selecciona una materia", "error");
+
+                        const students = app.state.students.filter(s => {
+                            if (s.group !== group) return false;
+                            return s.subjects.cyr === subject || s.subjects.tyd === subject;
+                        }).sort((a, b) => a.name.localeCompare(b.name));
+
+                        if (students.length === 0) {
+                            return app.views.notify("No hay alumnos con esa materia en ese grupo", "warning");
+                        }
+
+                        const criteriaList = criteriaDB[subject] || [];
+                        if (criteriaList.length === 0) {
+                            return app.views.notify("No se encontraron criterios para esa materia", "error");
+                        }
+
+                        const praOnly = document.getElementById('gs-filter-pra-only').checked;
+
+                        // Pre-calcular datos de cada alumno
+                        const studentDataMap = {};
+                        students.forEach(student => {
+                            const data = app.modules.calculation.getStudentSubjectData(student, subject);
+                            const gradeMap = {};
+                            data.finalCritData.forEach(c => {
+                                gradeMap[c.code] = { avg: c.avg, hasPassed: c.hasPassed, activityCount: c.activityCount };
+                            });
+                            studentDataMap[student.id] = gradeMap;
+                        });
+
+                        // Generar cabeceras
+                        const headerCells = criteriaList.map(c => {
+                            const parts = c.code.split('.');
+                            return `<th>${parts.slice(1).join('.')}</th>`;
+                        }).join('');
+
+                        // Generar filas de alumnos
+                        let rowsHTML = '';
+                        students.forEach(student => {
+                            const gradeMap = studentDataMap[student.id];
+                            let cellsHTML = '';
+
+                            criteriaList.forEach(crit => {
+                                const info = gradeMap[crit.code];
+                                let displayVal = 'X';
+                                let colorClass = '';
+
+                                if (praOnly) {
+                                    // Modo Solo PRA: solo mostrar nota en criterios trabajados en el PRA (tienen calificaciones de actividades)
+                                    if (info && info.activityCount > 0) {
+                                        const dg = info.avg < 1 ? 1 : info.avg;
+                                        displayVal = dg.toFixed(2).replace('.', ',');
+                                        colorClass = dg >= 5 ? 'grade-pass' : 'grade-fail';
+                                    }
+                                } else {
+                                    // Modo normal: mostrar nota si fue aprobado previamente o tiene calificaciones de actividades
+                                    if (info && (info.hasPassed || info.activityCount > 0)) {
+                                        const dg = info.avg < 1 ? 1 : info.avg;
+                                        displayVal = dg.toFixed(2).replace('.', ',');
+                                        colorClass = dg >= 5 ? 'grade-pass' : 'grade-fail';
+                                    }
+                                }
+
+                                cellsHTML += `<td class="${colorClass}">${displayVal}</td>`;
+                            });
+
+                            rowsHTML += `<tr><td class="student-name">${student.name}</td>${cellsHTML}</tr>`;
+                        });
+
+                        const htmlContent = `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe por Grupo y Materia: ${group} - ${subject}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f3f4f6;
+            padding: 2rem;
+            color: #1f2937;
+        }
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .header {
+            background: #1e3a5f;
+            color: #fff;
+            padding: 1.5rem 2rem;
+        }
+        .header h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+        .header p {
+            font-size: 0.85rem;
+            opacity: 0.85;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            padding: 1.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            min-width: 600px;
+        }
+        thead th {
+            background: #641010;
+            color: #fff;
+            font-weight: 700;
+            padding: 0.6rem 0.4rem;
+            text-align: center;
+            white-space: nowrap;
+            font-size: 0.75rem;
+            position: sticky;
+            top: 0;
+        }
+        thead th:first-child {
+            text-align: left;
+            min-width: 180px;
+        }
+        tbody tr:nth-child(even) {
+            background: #f9fafb;
+        }
+        tbody tr:hover {
+            background: #eff6ff;
+        }
+        td {
+            padding: 0.5rem 0.4rem;
+            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .student-name {
+            text-align: left !important;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .grade-pass {
+            color: #16a34a;
+            font-weight: 600;
+        }
+        .grade-fail {
+            color: #dc2626;
+            font-weight: 600;
+        }
+        @media print {
+            body { padding: 0; background: #fff; }
+            .container { box-shadow: none; border-radius: 0; }
+            thead th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Informe por Grupo y Materia: ${group} - ${subject}</h1>
+            <p>Departamento de Tecnolog&iacute;a - IES Virgen de Villadiego</p>
+            <p>${students.length} alumno(s) &nbsp;|&nbsp; ${criteriaList.length} criterio(s) de evaluaci&oacute;n</p>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Alumno/a</th>
+                        ${headerCells}
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHTML}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>`;
+
+                        const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        const cleanGroup = app.utils.normalizeFileName(group);
+                        a.href = url;
+                        a.download = `InformeGrupoYMateria_${praOnly ? 'SoloPRA_' : ''}${cleanGroup}_${subject}.html`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+
+                        app.views.notify("HTML exportado correctamente", "success");
                         this.closeGroupSubjectModal();
                     }
                 }
