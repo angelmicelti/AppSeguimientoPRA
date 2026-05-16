@@ -1003,10 +1003,15 @@
             </div>
 
             <div class="bg-white p-6 rounded-lg shadow max-w-5xl mx-auto soft-shadow hover-lift">
-                
-                <!-- Sección Informes Individuales -->
-                <div class="mb-8 border-b pb-6">
-                    <h3 class="font-bold text-lg text-gray-800 mb-4">Informes Individuales</h3>
+
+                <!-- Acordeón 1: Informes Individuales -->
+                <div class="border-b border-gray-200">
+                    <div class="flex items-center gap-3 cursor-pointer hover:bg-red-50 py-3 px-1 rounded-lg transition-colors" onclick="app.views.toggleReportAccordion('reports-individual-content', 'reports-individual-chevron')">
+                        <i class="fa-solid fa-chevron-right text-red-600 transition-transform duration-300" id="reports-individual-chevron"></i>
+                        <i class="fa-solid fa-user text-red-500"></i>
+                        <h3 class="font-bold text-lg text-gray-800">Informes Individuales</h3>
+                    </div>
+                    <div id="reports-individual-content" class="accordion-content hidden mt-0 border-t border-gray-100 pt-4 pb-4">
                     <div class="flex gap-4 items-center mb-4">
                         <label class="block text-sm font-bold text-gray-700 w-40">Seleccionar Alumno:</label>
                         <select id="report-student-select" class="flex-1 border rounded p-2 max-w-md focus:ring-2 focus:ring-red-500 transition focus:shadow-md">
@@ -1043,11 +1048,17 @@
                             <h4 class="font-bold text-sm">Calificaciones de Actividades</h4>
                         </div>
                     </div>
+                    </div>
                 </div>
 
-                <!-- Sección Informe por Grupo y Materia -->
-                <div class="mb-8 border-b pb-6">
-                    <h3 class="font-bold text-lg text-gray-800 mb-4 text-center">Informes por Grupo y Materia</h3>
+                <!-- Acordeón 2: Informes por Grupo y Materia -->
+                <div class="border-b border-gray-200">
+                    <div class="flex items-center gap-3 cursor-pointer hover:bg-red-50 py-3 px-1 rounded-lg transition-colors" onclick="app.views.toggleReportAccordion('reports-group-content', 'reports-group-chevron')">
+                        <i class="fa-solid fa-chevron-right text-red-600 transition-transform duration-300" id="reports-group-chevron"></i>
+                        <i class="fa-solid fa-users text-red-500"></i>
+                        <h3 class="font-bold text-lg text-gray-800">Informes por Grupo y Materia</h3>
+                    </div>
+                    <div id="reports-group-content" class="accordion-content hidden mt-0 border-t border-gray-100 pt-4 pb-4">
                     <div class="flex justify-center">
                         <div class="border p-4 rounded-lg hover:bg-red-50 transition cursor-pointer bg-gray-50 text-center hover-lift hover-glow w-full max-w-xs" onclick="app.modules.reports.openGroupSubjectModal()">
                             <i class="fa-solid fa-users text-red-500 text-2xl mb-2"></i>
@@ -1057,9 +1068,14 @@
                     </div>
                 </div>
 
-                <!-- Sección Alumnado PRA por Materia -->
-                <div class="mb-8 border-b pb-6">
-                    <h3 class="font-bold text-lg text-gray-800 mb-4 text-center">Alumnado PRA por Materia</h3>
+                <!-- Acordeón 3: Alumnado PRA por Materia -->
+                <div class="border-b border-gray-200">
+                    <div class="flex items-center gap-3 cursor-pointer hover:bg-red-50 py-3 px-1 rounded-lg transition-colors" onclick="app.views.toggleReportAccordion('reports-pra-content', 'reports-pra-chevron')">
+                        <i class="fa-solid fa-chevron-right text-red-600 transition-transform duration-300" id="reports-pra-chevron"></i>
+                        <i class="fa-solid fa-clipboard-list text-red-500"></i>
+                        <h3 class="font-bold text-lg text-gray-800">Alumnado PRA por Materia</h3>
+                    </div>
+                    <div id="reports-pra-content" class="accordion-content hidden mt-0 border-t border-gray-100 pt-4 pb-4">
                     <div class="bg-gray-50 border border-gray-200 p-4 rounded-lg mb-4 soft-shadow hover-lift">
                         <h4 class="font-bold text-gray-800 text-sm mb-3">Seleccionar materia(s):</h4>
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -1104,11 +1120,17 @@
                             <i class="fa-solid fa-file-pdf mr-2"></i> Generar PDF
                         </button>
                     </div>
+                    </div>
                 </div>
 
-                <!-- Sección Calendario Global -->
+                <!-- Acordeón 4: Calendario de Entregas -->
                 <div>
-                    <h3 class="font-bold text-lg text-gray-800 mb-4">Calendario de Entregas</h3>
+                    <div class="flex items-center gap-3 cursor-pointer hover:bg-red-50 py-3 px-1 rounded-lg transition-colors" onclick="app.views.toggleReportAccordion('reports-calendar-content', 'reports-calendar-chevron')">
+                        <i class="fa-solid fa-chevron-right text-red-600 transition-transform duration-300" id="reports-calendar-chevron"></i>
+                        <i class="fa-solid fa-calendar-days text-red-500"></i>
+                        <h3 class="font-bold text-lg text-gray-800">Calendario de Entregas</h3>
+                    </div>
+                    <div id="reports-calendar-content" class="accordion-content hidden mt-0 border-t border-gray-100 pt-4 pb-2">
                     <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-4 soft-shadow hover-lift">
                         <div class="flex justify-between items-center mb-2">
                             <h4 class="font-bold text-yellow-800 text-sm">Selección de Alumnos para Calendario</h4>
@@ -1123,6 +1145,7 @@
                         <button onclick="app.modules.reports.generateCalendarPDF()" class="mt-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 font-bold w-full md:w-auto transition btn-primary ripple hover-lift">
                             <i class="fa-solid fa-calendar-days mr-2"></i> Generar Calendario PDF
                         </button>
+                    </div>
                     </div>
                 </div>
 
@@ -2111,6 +2134,54 @@
                         }, 300);
                     } else {
                         // Cerrar acordeón
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        requestAnimationFrame(() => {
+                            content.style.maxHeight = '0';
+                            setTimeout(() => {
+                                content.classList.add('hidden');
+                                chevron.classList.remove('fa-chevron-down');
+                                chevron.classList.add('fa-chevron-right');
+                            }, 300);
+                        });
+                    }
+                },
+
+                // IDs de los acordeones de informes para exclusión mutua
+                _reportAccordionIds: ['reports-individual-content', 'reports-group-content', 'reports-pra-content', 'reports-calendar-content'],
+
+                toggleReportAccordion: function(id, chevronId) {
+                    // Primero cerrar todos los demás
+                    this._reportAccordionIds.forEach(accId => {
+                        if (accId === id) return;
+                        const content = document.getElementById(accId);
+                        const chevId = accId.replace('-content', '-chevron');
+                        const chevron = document.getElementById(chevId);
+                        if (content && !content.classList.contains('hidden')) {
+                            content.style.maxHeight = content.scrollHeight + 'px';
+                            requestAnimationFrame(() => {
+                                content.style.maxHeight = '0';
+                                setTimeout(() => {
+                                    content.classList.add('hidden');
+                                    chevron.classList.remove('fa-chevron-down');
+                                    chevron.classList.add('fa-chevron-right');
+                                }, 300);
+                            });
+                        }
+                    });
+
+                    // Luego abrir/cerrar el seleccionado
+                    const content = document.getElementById(id);
+                    const chevron = document.getElementById(chevronId);
+
+                    if (content.classList.contains('hidden')) {
+                        content.classList.remove('hidden');
+                        chevron.classList.remove('fa-chevron-right');
+                        chevron.classList.add('fa-chevron-down');
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        setTimeout(() => {
+                            content.style.maxHeight = 'none';
+                        }, 300);
+                    } else {
                         content.style.maxHeight = content.scrollHeight + 'px';
                         requestAnimationFrame(() => {
                             content.style.maxHeight = '0';
