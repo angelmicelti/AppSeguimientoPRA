@@ -424,8 +424,8 @@
                             <i class="fa-solid fa-users text-2xl"></i>
                         </div>
                     </div>
-                    <h3 class="text-xl font-bold mb-2">GESTIÓN DE ALUMNADO</h3>
-                    <p class="text-gray-500 text-sm"><strong>Añadir alumnos </strong> manualmente, por lotes o importar desde Excel.</p>
+                    <h3 class="text-xl font-bold mb-2">CONFIGURACIÓN</h3>
+                    <p class="text-gray-500 text-sm"><strong>Gestión de alumnado</strong>, copias de seguridad y configuración general.</p>
                     <div class="mt-4 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity text-sm font-semibold flex items-center">
                         <span>Haz clic para Acceder</span>
                         <i class="fa-solid fa-arrow-right ml-2"></i>
@@ -492,17 +492,6 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Actions Footer -->
-            <div class="max-w-5xl mx-auto mt-12 flex flex-col md:flex-row justify-center items-center gap-4">
-                <button onclick="app.data.exportJSON()" class="flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 px-6 rounded transition btn-primary ripple hover-lift md:w-auto w-full max-w-xs">
-                    <i class="fa-solid fa-download"></i> Descargar JSON
-                </button>
-                <label class="flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 px-6 rounded transition btn-primary ripple hover-lift cursor-pointer md:w-auto w-full max-w-xs">
-                    <i class="fa-solid fa-upload"></i> Cargar JSON
-                    <input type="file" class="hidden" onchange="app.data.importJSON(this)">
-                </label>
-            </div>
 
             <!-- Sección de Ayuda Rápida - ACORDEÓN -->
             <div class="max-w-5xl mx-auto mt-12 bg-blue-50 border border-blue-200 rounded-xl p-6 soft-shadow">
@@ -520,7 +509,7 @@
                         <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-400 hover-lift soft-shadow">
                             <h4 class="font-bold text-blue-700 mb-2"><i class="fa-solid fa-users mr-2"></i>Flujo de Trabajo Recomendado</h4>
                             <ol class="list-decimal pl-5 text-sm text-gray-700 space-y-2">
-                                <li><span class="font-semibold">Añade alumnos</span> en la sección "Gestión de Alumnado"</li>
+                                <li><span class="font-semibold">Añade alumnos</span> en la sección "Configuración"</li>
                                 <li><span class="font-semibold">Configura materias y criterios</span> en "Datos del Programa"</li>
                                 <li><span class="font-semibold">Crea actividades</span> para los criterios pendientes</li>
                                 <li><span class="font-semibold">Evalúa entregas</span> y califica criterios</li>
@@ -548,68 +537,66 @@
             </div>
         </section>
 
-        <!-- VISTA: GESTIÓN DE ALUMNADO -->
+        <!-- VISTA: CONFIGURACIÓN -->
         <section id="view-students" class="view-transition hidden">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-blue-800"><i class="fa-solid fa-users mr-2"></i>Gestión de Alumnado</h2>
+                <h2 class="text-2xl font-bold text-blue-800"><i class="fa-solid fa-gear mr-2"></i>Configuración</h2>
                 <button onclick="app.router.home()" class="text-blue-600 hover:underline hover:text-blue-800 transition-colors flex items-center gap-1">
                     <i class="fa-solid fa-arrow-left mr-1"></i> VOLVER AL INICIO
                 </button>
             </div>
 
-            <!-- Acordeón de Guía para Gestión de Alumnado -->
-            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 soft-shadow">
-                <div class="flex items-center justify-between gap-3 mb-0 cursor-pointer hover:bg-blue-100 p-3 -m-3 rounded-lg transition-colors" onclick="app.views.toggleAccordion('guide-students-content')">
-                    <div class="flex items-center gap-3">
-                        <i class="fa-solid fa-circle-info text-blue-600 text-xl"></i>
-                        <h3 class="text-lg font-bold text-blue-800">Guía: Gestión de Alumnado</h3>
-                    </div>
-                    <i class="fa-solid fa-chevron-right text-blue-600 transition-transform duration-300" id="guide-students-chevron"></i>
+            <!-- Acordeón 1: Gestión de Alumnado -->
+            <div class="border-b border-gray-200 bg-white rounded-t-lg shadow mb-0 soft-shadow">
+                <div class="flex items-center gap-3 cursor-pointer hover:bg-blue-50 py-3 px-4 rounded-t-lg transition-colors" onclick="app.views.toggleSettingsAccordion('settings-students-content', 'settings-students-chevron')">
+                    <i class="fa-solid fa-chevron-right text-blue-600 transition-transform duration-300" id="settings-students-chevron"></i>
+                    <i class="fa-solid fa-users text-blue-500"></i>
+                    <h3 class="font-bold text-lg text-gray-800">Gestión de Alumnado</h3>
                 </div>
+                <div id="settings-students-content" class="accordion-content hidden mt-0 border-t border-gray-100 pt-4 pb-6 px-4">
 
-                <div id="guide-students-content" class="accordion-content hidden mt-4 border-t border-blue-200 pt-4">
-                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 hover-lift soft-shadow">
-                        <h4 class="text-lg font-bold text-blue-700 mb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-users"></i> 1. Gestión de Alumnado
-                        </h4>
-                        <div class="space-y-2 text-gray-700">
-                            <p><strong>Propósito:</strong> Crear y gestionar la lista de alumnos que participan en el programa de recuperación.</p>
-                            <p><strong>Funciones principales:</strong></p>
-                            <ul class="list-disc pl-5 space-y-1">
-                                <li><strong>Añadir individualmente:</strong> Introduce nombre y grupo del alumno</li>
-                                <li><strong>Importar por lotes:</strong> Usa el formato "Apellido1 Apellido2, Nombre, Grupo" separado por punto y coma</li>
-                                <li><strong>Importar desde Excel:</strong> Sube un archivo Excel con columnas de nombres y grupos</li>
-                                <li><strong>Editar/Eliminar:</strong> Modifica datos o elimina alumnos usando los iconos de acciones</li>
-                            </ul>
-                            <p class="text-sm text-blue-600 mt-2"><i class="fa-solid fa-lightbulb mr-1"></i> <strong>Consejo:</strong> Usa la importación por lotes para añadir rápidamente una clase completa.</p>
+                <!-- Sub-acordeón: Añadir Alumno -->
+                <div class="border border-gray-200 rounded-lg mb-3 overflow-hidden">
+                    <div class="flex items-center gap-2 cursor-pointer hover:bg-blue-50 py-2 px-3 transition-colors" onclick="app.views.toggleAccordion('sub-add-student-content')">
+                        <i class="fa-solid fa-chevron-right text-blue-500 text-sm transition-transform duration-300" id="sub-add-student-chevron"></i>
+                        <i class="fa-solid fa-user-plus text-blue-400"></i>
+                        <span class="font-semibold text-gray-800">Añadir Alumno</span>
+                    </div>
+                    <div id="sub-add-student-content" class="accordion-content hidden border-t border-gray-100 pt-3 pb-2 px-3">
+                        <div class="flex flex-col md:flex-row gap-2">
+                            <input type="text" id="input-student-single" placeholder="Apellido1 Apellido2, Nombre" class="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition focus:shadow-md">
+                            <input type="text" id="input-student-group" placeholder="Grupo (ej: 2ºA)" class="w-full md:w-32 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition focus:shadow-md">
+                            <button onclick="app.modules.students.addSingle()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 font-bold transition btn-primary ripple hover-lift">
+                                Añadir
+                            </button>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="bg-white rounded-lg shadow p-6 mb-6 soft-shadow hover-lift">
-                <div class="mb-4 border-b pb-4">
-                    <h3 class="text-lg font-semibold mb-2">Añadir Alumno</h3>
-                    <div class="flex flex-col md:flex-row gap-2">
-                        <input type="text" id="input-student-single" placeholder="Apellido1 Apellido2, Nombre" class="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition focus:shadow-md">
-                        <input type="text" id="input-student-group" placeholder="Grupo (ej: 2ºA)" class="w-full md:w-32 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition focus:shadow-md">
-                        <button onclick="app.modules.students.addSingle()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 font-bold transition btn-primary ripple hover-lift">
-                            Añadir
-                        </button>
+                <!-- Sub-acordeón: Importar Alumnado desde Texto Plano -->
+                <div class="border border-gray-200 rounded-lg mb-3 overflow-hidden">
+                    <div class="flex items-center gap-2 cursor-pointer hover:bg-blue-50 py-2 px-3 transition-colors" onclick="app.views.toggleAccordion('sub-import-text-content')">
+                        <i class="fa-solid fa-chevron-right text-blue-500 text-sm transition-transform duration-300" id="sub-import-text-chevron"></i>
+                        <i class="fa-solid fa-file-lines text-blue-400"></i>
+                        <span class="font-semibold text-gray-800">Importar Alumnado desde Texto Plano</span>
                     </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <h3 class="text-lg font-semibold mb-2">Importar Texto Plano</h3>
+                    <div id="sub-import-text-content" class="accordion-content hidden border-t border-gray-100 pt-3 pb-2 px-3">
                         <p class="text-sm text-gray-500 mb-2">Formato: Apellido1 Apellido2, Nombre, Grupo; Siguiente...</p>
                         <textarea id="input-student-batch" class="w-full h-32 border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition focus:shadow-md" placeholder="Pérez López, Juan, 2ºA; García Ruiz, Ana, 3ºB"></textarea>
                         <button onclick="app.modules.students.addBatch()" class="mt-2 bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 w-full transition btn-primary ripple hover-lift">
                             Procesar Texto
                         </button>
                     </div>
-                    <div>
-                        <h3 class="text-lg font-semibold mb-2">Importar Excel</h3>
+                </div>
+
+                <!-- Sub-acordeón: Importar Excel -->
+                <div class="border border-gray-200 rounded-lg mb-3 overflow-hidden">
+                    <div class="flex items-center gap-2 cursor-pointer hover:bg-blue-50 py-2 px-3 transition-colors" onclick="app.views.toggleAccordion('sub-import-excel-content')">
+                        <i class="fa-solid fa-chevron-right text-blue-500 text-sm transition-transform duration-300" id="sub-import-excel-chevron"></i>
+                        <i class="fa-solid fa-file-excel text-green-500"></i>
+                        <span class="font-semibold text-gray-800">Importar Excel</span>
+                    </div>
+                    <div id="sub-import-excel-content" class="accordion-content hidden border-t border-gray-100 pt-3 pb-2 px-3">
                         <div class="border-2 border-dashed border-gray-300 rounded-lg h-32 flex flex-col justify-center items-center p-4 bg-gray-50 hover:bg-gray-100 transition hover-scale">
                             <i class="fa-solid fa-file-excel text-green-600 text-3xl mb-2"></i>
                             <label class="cursor-pointer bg-white border border-gray-300 px-3 py-1 rounded shadow-sm text-sm hover:bg-gray-50 transition btn-primary ripple">
@@ -620,49 +607,86 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="bg-white rounded-lg shadow overflow-hidden soft-shadow hover-lift">
-                <h3 class="text-lg font-semibold p-4 bg-gray-50 border-b">Listado de Alumnos (<span id="student-count">0</span>)</h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-100 text-gray-600 text-sm uppercase">
-                                <th class="p-4 border-b">Nombre Completo</th>
-                                <th class="p-4 border-b w-24">Grupo</th>
-                                <th class="p-4 border-b">Materias Asignadas</th>
-                                <th class="p-4 border-b text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="student-list-body">
-                            <!-- JS Render -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- ACORDEÓN: BOTÓN PARA BORRAR TODO EL ALUMNADO (PANTALLA 1) -->
-            <div class="mt-8 p-6 bg-red-50 border border-red-200 rounded-lg">
-                <div class="flex items-center justify-between gap-3 mb-0 cursor-pointer hover:bg-red-100 p-3 -m-3 rounded-lg transition-colors" onclick="app.views.toggleAccordion('delete-all-students-content')">
-                    <div class="flex items-center gap-3">
-                        <i class="fa-solid fa-triangle-exclamation text-red-600 text-xl"></i>
-                        <h3 class="text-lg font-bold text-red-700">Acción de Borrado Masivo de Alumnado</h3>
+                <!-- Sub-acordeón: Listado de Alumnos -->
+                <div class="border border-gray-200 rounded-lg overflow-hidden">
+                    <div class="flex items-center gap-2 cursor-pointer hover:bg-blue-50 py-2 px-3 transition-colors" onclick="app.views.toggleAccordion('sub-student-list-content')">
+                        <i class="fa-solid fa-chevron-right text-blue-500 text-sm transition-transform duration-300" id="sub-student-list-chevron"></i>
+                        <i class="fa-solid fa-list text-blue-400"></i>
+                        <span class="font-semibold text-gray-800">Listado de Alumnos (<span id="student-count">0</span>)</span>
                     </div>
-                    <i class="fa-solid fa-chevron-right text-red-600 transition-transform duration-300" id="delete-all-students-chevron"></i>
+                    <div id="sub-student-list-content" class="accordion-content hidden border-t border-gray-100 pt-3 pb-2 px-3">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-100 text-gray-600 text-sm uppercase">
+                                        <th class="p-3 border-b">Nombre Completo</th>
+                                        <th class="p-3 border-b w-24">Grupo</th>
+                                        <th class="p-3 border-b">Materias Asignadas</th>
+                                        <th class="p-3 border-b text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="student-list-body">
+                                    <!-- JS Render -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
 
-                <div id="delete-all-students-content" class="accordion-content hidden mt-4 border-t border-red-200 pt-4">
-                    <p class="text-sm text-gray-700 mb-4">Este botón eliminará <strong>TODOS LOS ALUMNOS</strong> introducidos en el sistema. Esto implica:</p>
-                    <ul class="list-disc pl-5 text-sm text-gray-700 mb-4 space-y-1">
-                        <li>Borrado completo de la lista de alumnos</li>
-                        <li>Eliminación de todas las materias asignadas</li>
-                        <li>Borrado de todos los criterios marcados como superados</li>
-                        <li>Eliminación de todas las actividades programadas</li>
-                        <li><strong class="text-red-700">Esta acción NO se puede deshacer</strong></li>
-                    </ul>
-                    <button onclick="app.modules.students.deleteAllStudents()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded transition btn-primary ripple hover-lift">
-                        <i class="fa-solid fa-trash-can mr-2"></i> BORRAR TODO EL ALUMNADO (RESET ABSOLUTO)
-                    </button>
+                </div>
+            </div>
+
+            <!-- Acordeón 2: Copia de Seguridad -->
+            <div class="border-b border-gray-200 bg-white shadow soft-shadow">
+                <div class="flex items-center gap-3 cursor-pointer hover:bg-green-50 py-3 px-4 transition-colors" onclick="app.views.toggleSettingsAccordion('settings-backup-content', 'settings-backup-chevron')">
+                    <i class="fa-solid fa-chevron-right text-green-600 transition-transform duration-300" id="settings-backup-chevron"></i>
+                    <i class="fa-solid fa-database text-green-500"></i>
+                    <h3 class="font-bold text-lg text-gray-800">Copia de Seguridad</h3>
+                </div>
+                <div id="settings-backup-content" class="accordion-content hidden mt-0 border-t border-gray-100 pt-4 pb-6 px-4">
+                    <p class="text-sm text-gray-600 mb-4">Descarga o restaura una copia completa de todos los datos del PRA (alumnado, materias, criterios, calificaciones y actividades).</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button onclick="app.data.exportJSON()" class="flex items-center justify-center gap-3 bg-green-100 hover:bg-green-200 text-green-800 font-semibold py-4 px-6 rounded-lg transition btn-primary ripple hover-lift border border-green-300">
+                            <i class="fa-solid fa-download text-xl"></i>
+                            <div class="text-left">
+                                <div class="font-bold">Descargar JSON</div>
+                                <div class="text-xs font-normal text-green-600">Copia completa del PRA</div>
+                            </div>
+                        </button>
+                        <label class="flex items-center justify-center gap-3 bg-blue-100 hover:bg-blue-200 text-blue-800 font-semibold py-4 px-6 rounded-lg transition btn-primary ripple hover-lift border border-blue-300 cursor-pointer">
+                            <i class="fa-solid fa-upload text-xl"></i>
+                            <div class="text-left">
+                                <div class="font-bold">Cargar JSON</div>
+                                <div class="text-xs font-normal text-blue-600">Restaurar copia de seguridad</div>
+                            </div>
+                            <input type="file" class="hidden" onchange="app.data.importJSON(this)">
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acordeón 3: Borrado Masivo de Alumnado -->
+            <div class="bg-white rounded-b-lg shadow soft-shadow">
+                <div class="flex items-center gap-3 cursor-pointer hover:bg-red-50 py-3 px-4 transition-colors" onclick="app.views.toggleSettingsAccordion('settings-delete-content', 'settings-delete-chevron')">
+                    <i class="fa-solid fa-chevron-right text-red-600 transition-transform duration-300" id="settings-delete-chevron"></i>
+                    <i class="fa-solid fa-triangle-exclamation text-red-500"></i>
+                    <h3 class="font-bold text-lg text-gray-800">Borrado Masivo de Alumnado</h3>
+                </div>
+                <div id="settings-delete-content" class="accordion-content hidden mt-0 border-t border-gray-100 pt-4 pb-6 px-4">
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <p class="text-sm text-gray-700 mb-4">Este botón eliminará <strong>TODOS LOS ALUMNOS</strong> introducidos en el sistema. Esto implica:</p>
+                        <ul class="list-disc pl-5 text-sm text-gray-700 mb-4 space-y-1">
+                            <li>Borrado completo de la lista de alumnos</li>
+                            <li>Eliminación de todas las materias asignadas</li>
+                            <li>Borrado de todos los criterios marcados como superados</li>
+                            <li>Eliminación de todas las actividades programadas</li>
+                            <li><strong class="text-red-700">Esta acción NO se puede deshacer</strong></li>
+                        </ul>
+                        <button onclick="app.modules.students.deleteAllStudents()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded transition btn-primary ripple hover-lift">
+                            <i class="fa-solid fa-trash-can mr-2"></i> BORRAR TODO EL ALUMNADO (RESET ABSOLUTO)
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1163,7 +1187,7 @@
                 <div class="max-w-3xl mx-auto py-2 px-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                     <button id="nav-btn-students" onclick="app.router.navigate('students'); app.views.toggleBottomNav(true);" class="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-blue-50 transition-colors group">
                         <i class="fa-solid fa-users text-blue-600 text-lg group-hover:scale-110 transition-transform"></i>
-                        <span class="text-xs font-semibold text-gray-700 group-hover:text-blue-700 transition-colors">Gestión Alumnado</span>
+                        <span class="text-xs font-semibold text-gray-700 group-hover:text-blue-700 transition-colors">Configuración</span>
                     </button>
                     <button id="nav-btn-program" onclick="app.router.navigate('program'); app.views.toggleBottomNav(true);" class="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-green-50 transition-colors group">
                         <i class="fa-solid fa-clipboard-check text-green-600 text-lg group-hover:scale-110 transition-transform"></i>
@@ -2148,6 +2172,53 @@
 
                 // IDs de los acordeones de informes para exclusión mutua
                 _reportAccordionIds: ['reports-individual-content', 'reports-group-content', 'reports-pra-content', 'reports-calendar-content'],
+
+                _settingsAccordionIds: ['settings-students-content', 'settings-delete-content', 'settings-backup-content'],
+
+                toggleSettingsAccordion: function(id, chevronId) {
+                    // Primero cerrar todos los demás
+                    this._settingsAccordionIds.forEach(accId => {
+                        if (accId === id) return;
+                        const content = document.getElementById(accId);
+                        const chevId = accId.replace('-content', '-chevron');
+                        const chevron = document.getElementById(chevId);
+                        if (content && !content.classList.contains('hidden')) {
+                            content.style.maxHeight = content.scrollHeight + 'px';
+                            requestAnimationFrame(() => {
+                                content.style.maxHeight = '0';
+                                setTimeout(() => {
+                                    content.classList.add('hidden');
+                                    chevron.classList.remove('fa-chevron-down');
+                                    chevron.classList.add('fa-chevron-right');
+                                }, 300);
+                            });
+                        }
+                    });
+
+                    // Luego abrir/cerrar el seleccionado
+                    const content = document.getElementById(id);
+                    const chevron = document.getElementById(chevronId);
+
+                    if (content.classList.contains('hidden')) {
+                        content.classList.remove('hidden');
+                        chevron.classList.remove('fa-chevron-right');
+                        chevron.classList.add('fa-chevron-down');
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        setTimeout(() => {
+                            content.style.maxHeight = 'none';
+                        }, 300);
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        requestAnimationFrame(() => {
+                            content.style.maxHeight = '0';
+                            setTimeout(() => {
+                                content.classList.add('hidden');
+                                chevron.classList.remove('fa-chevron-down');
+                                chevron.classList.add('fa-chevron-right');
+                            }, 300);
+                        });
+                    }
+                },
 
                 toggleReportAccordion: function(id, chevronId) {
                     // Primero cerrar todos los demás
